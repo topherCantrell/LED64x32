@@ -89,11 +89,11 @@ data shifts in when the clock line goes from low to high. You'll do 64 clocks he
 
 6) Go back to step 1
 
-This is just one pass through the display loop. You can control the color over time to PWM different colors.
+This is just one pass through the display loop. You can (quickly) control the color over time to produce different shades colors.
 
 For instance, instead of lighting a green pixel ON every pass through the loop you might turn it ON ever other pass. If your loop is fast enough 
-then the blinking will be imperceptible. Now you have two shades of green: bright (on both passes) and dim (on every other pass). 
-How about dividing the time up into 4 slots? That gives you 4 shades of green, 4 shades of red, and 4 shades of blue. 4x4x4 = 64 colors at each pixel.
+then the blinking will be imperceptible. Now you have two shades of green: bright (ON both passes) and dim (ON every other pass). 
+How about dividing the time up into 3 slots? That gives you 4 shades of green, 4 shades of red, and 4 shades of blue. 4x4x4 = 64 colors at each pixel.
 
 The more slots you want, the faster your display loop has to be to keep the blinking from being seen. You quickly run into speed limitations of your processor and/or the display itself.
 
