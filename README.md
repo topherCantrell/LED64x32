@@ -25,12 +25,12 @@ The display driver chip on the module:
 ## Hardware
 
 The board has driver hardware for two pixel rows at a time. Each row is 64 cells. Each cell has a RED, a BLUE, and a GREEN LED in it.
-3*64 = 192 LEDs per row. Two rows is 192*2 = 384 LEDs to drive at once.
+3 x 64 = 192 LEDs per row. Two rows is 192 x 2 = 384 LEDs to drive at once.
 
 ![](https://github.com/topherCantrell/LED64x32/blob/master/art/back.png)
 
 There are 24 LED driver chips along the top and bottom in the picture. The chips seem to be SCT2026 driver chips (see the link above).
-Each chip can drive 16 LEDs. That's 24 * 16 = 384 LEDs.
+Each chip can drive 16 LEDs. That's 24 x 16 = 384 LEDs.
 
 There are 16 APM4953 chips down the middle of the picture. Each of these has 2 P-channel MOSFETs that feed the positive side of the LEDs. That's 
 32 drivers. The driven LEDs share these drivers -- 12 LEDs to a MOSFET.
@@ -48,6 +48,53 @@ I used a continuity checker and a scope to trace connections. Here is a basic sy
 
 ![](https://github.com/topherCantrell/LED64x32/blob/master/art/system.png)
 
+The diagram only shows one LED. Remember there are 2 rows of 192 LEDs driven at once. There are six sets of shift registers -- R, G, and B for two
+different rows. Only one line is shown at the bottom of the diagram. When the clock line goes from low to high the data is shifted through 
+the registers.
 
+When LAT goes from low to high the data from the shift registers is latched through to the output driver. As long as LAT is high the outputs
+will follow the shift register. When LAT goes from high to low the data is latched and held at the output drivers. This allows you to hold the LEDs
+on while you shift in the data for the next row.
+
+The OE controls the outputs of all the LEDs on the two driven rows. When OE is high, all of the LEDs are turned off.
+
+The 74123 keeps the row drivers enabled. Whenever the A row input goes from 0 to 1 the chip produces a low pulse (active low enable). As long as you
+are updating the display fast enough you'll retrigger the 74123 before the 4.6ms timeout. If you are too slow then the pulse will end and the
+rows will be disabled until your next even-to-odd row change.
+
+The resistor and capacitor are two small for me to read, but I measured the 4.6ms timeout pulse using a scope.
+
+You talk to the display with the input connector on the left side of the board. The right connector carries the shift registers through to
+another display if you are chaining them.
+
+Here is the pinout of the left connector:
 
 ![](https://github.com/topherCantrell/LED64x32/blob/master/art/displayPinout.png)
+
+## Protocol
+
+Here is how you control the display:
+
+This loop shows two rows (one at the top and one at the bottom) while it fills the shift registers for the next two rows.
+
+1) The shift registers have been filled and latched, and the row lines have been set (see later steps below). Hold OE low to 
+enable the output of the finished row.
+
+2) Hold LAT low and clock the bits of RGB data into the shift registers. You are clocking in 6 bits at a time (R,G,B top and R,G,B bottom). The
+data shifts in when the clock line goes from low to high. You'll do 64 clocks here (64 x 6 = 384 LEDs).
+
+3) Turn OE high to disable the output while you change rows. It goes low again when you get back to step 1.
+
+4) Pulse the LAT line from low to high to low to latch in the new data.
+
+5) Change the row address pins to the new row address.
+
+6) Go back to step 1
+
+This is just one pass through the display loop. You can control the color over time to PWM different colors.
+
+For instance, instead of holding a green pixel on every pass you might turn it on ever other pass. Now you have two shades of green: bright (on
+both passes) and dim (on every other pass). How about dividing the time up into 4 slots? That gives you 4 shades of green, 4 shades of red, and 4 shades
+of blue. 4x4x4 = 64 colors at each pixel.
+
+The more slots you want, the faster your display loop has to be. You quickly run into speed limitations of your processor and/or the display itself.
