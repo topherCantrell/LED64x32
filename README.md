@@ -28,7 +28,7 @@ The board has driver hardware for two display rows at a time. Each row is 64 cel
 3 x 64 = 192 LEDs per row. Two rows is 192 x 2 = 384 LEDs to drive at once.
 
 This is the back of the board I have:
-![](https://github.com/topherCantrell/LED64x32/blob/master/art/back.png)
+![](art/back.png)
 
 There are 24 LED driver chips along the top and bottom in the picture. The chips function as SCT2026 driver chips (see the link above).
 Each chip can drive 16 LEDs. That's 24 x 16 = 192 x 2 = 384 LEDs.
@@ -47,7 +47,7 @@ the row decoder chips. After 4.6ms of inactivity the display is turned off until
 
 I used a continuity checker and a scope to trace the connections. Here is a basic system diagram I was able to deduce:
 
-![](https://github.com/topherCantrell/LED64x32/blob/master/art/system.png)
+![](art/system.png)
 
 The diagram only shows one LED. Remember there are 2 rows of 192 LEDs driven at once. There are six sets of shift registers -- R, G, and B for two
 different rows. Only one line is shown at the bottom of the diagram. When the clock line goes from low to high the data is shifted through 
@@ -69,7 +69,7 @@ another display if you are chaining them.
 
 Here is the pinout of the left connector:
 
-![](https://github.com/topherCantrell/LED64x32/blob/master/art/displayPinout.png)
+![](art/displayPinout.png)
 
 ## Protocol
 
